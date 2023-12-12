@@ -16,6 +16,21 @@ def remove(connections):
     if connections in names:
         names.remove(connections)
 
+
+def clientThread(socketObject, adress):
+    socketObject.send("welcome to chat".encode("utf-8"))
+    while True:
+        try:
+           message = socketObject.recv(2048).decode("utf-8")
+           if message:
+                # messageSent = "<" + adress[0] + ">" + message
+                print(message,adress)
+                broadcast(message, socketObject)
+           else:
+               remove(socketObject)
+               remove(names)
+        except:
+            continue
 def broadcast(message, connections):
     for i in clients:
         if i != connections:
@@ -24,29 +39,17 @@ def broadcast(message, connections):
             except:
                 remove(i)
 
-def clientThread(socketObject, adress):
-    socketObject.send("welcome to chat".encode("utf-8"))
-    while True:
-        try:
-           message = socketObject.recv(2048).decode("utf-8")
-           if message:
-                messageSent = "<" + adress[0] + ">" + message
-                print(message)
-                broadcast(messageSent, socketObject)
-           else:
-               remove(socketObject)
-               remove(names)
-        except:
-            continue
-
 while True:
     socketObject, adress = server.accept()
     socketObject.send("name".encode("utf-8"))
     name = socketObject.recv(2048).decode("utf-8")
     names.append(name)
     clients.append(socketObject)
-    broadcast(name, socketObject)
+    msg = "{name}, join the session"
+    broadcast(msg, socketObject)
+    print(clients)
     print(names)
-    newThread = Thread(target = clientThread, args = (socketObject, adress))
+    print(name)
+    newThread = Thread(target = clientThread, args = (socketObject, name))
     newThread.start()
 
