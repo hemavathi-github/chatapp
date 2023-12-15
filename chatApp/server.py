@@ -13,8 +13,15 @@ names = []
 def remove(connections):
     if connections in clients:
         clients.remove(connections)
-    if connections in names:
         names.remove(connections)
+
+def broadcast(message, connections):
+    for i in clients:
+        if i != connections:
+            try:
+                i.send(message.encode("utf-8"))
+            except:
+                remove(connections)
 
 
 def clientThread(socketObject, adress):
@@ -28,28 +35,20 @@ def clientThread(socketObject, adress):
                 broadcast(message, socketObject)
            else:
                remove(socketObject)
-               remove(names)
+               remove(adress)
         except:
             continue
-def broadcast(message, connections):
-    for i in clients:
-        if i != connections:
-            try:
-                i.send(message.encode("utf-8"))
-            except:
-                remove(i)
+
 
 while True:
     socketObject, adress = server.accept()
-    socketObject.send("name".encode("utf-8"))
-    name = socketObject.recv(2048).decode("utf-8")
-    names.append(name)
+    socketObject.send("NAME".encode("utf-8"))
+    clientname = socketObject.recv(2048).decode("utf-8")
+    names.append(clientname)
     clients.append(socketObject)
-    msg = "{name}, join the session"
+    msg = "{}, join the session".format(clientname)
     broadcast(msg, socketObject)
-    print(clients)
-    print(names)
-    print(name)
-    newThread = Thread(target = clientThread, args = (socketObject, name))
+    print(msg)
+    newThread = Thread(target = clientThread, args = (socketObject, clientname))
     newThread.start()
 
