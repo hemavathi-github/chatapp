@@ -51,22 +51,32 @@ class Chatgui:
         self.msg.place(relx = 0.05, rely=0.8, relwidth = 0.9, relheight=0.35)
         self.sndbutton = Button(self.window, text="send", font=("Arial", 18), border=3, command= lambda: self.sendMsg(self.msg.get()))
         self.sndbutton.place(relx = 0.1, rely=0.7, relwidth = 0.3, relheight=0.1)
+        scrollbar=Scrollbar(self.txt)
+        scrollbar.place(relheight=1,relx=0.9)
+        scrollbar.config(command=self.txt.yview)
     def receive(self):
         while True:
             try:
                 message = client.recv(2048).decode("utf-8")
-                if message == "name":
+                if message == "NAME":
                     client.send(self.name.encode("utf-8"))
+                else:
+                   self.displayMsg(message)
             except:
                 print("error")
-                pass
+                client.close()
                 break
+
+    def displayMsg(self, msg):
+        self.txt.insert(END, msg + "\n")
 
     def sendMsg(self, msg):
         self.message = msg
-        self.msg.delete("0", "end")
+        self.msg.delete("0","end")
         thread2 = Thread(target = self.details)
         thread2.start()
+
+
     def details(self):
         while True:
             message = (f"{self.name}:{self.message}")
@@ -74,8 +84,7 @@ class Chatgui:
             print(message)  
             self.displayMsg(message)
             break
-    def displayMsg(self, msg):
-        self.txt.insert(END, msg + "\n")
+   
     
 chat = Chatgui()
         
